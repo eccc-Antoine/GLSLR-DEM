@@ -1,4 +1,4 @@
-## applying ground filtering model if needed for this dataset
+
 import pandas as pd
 import geopandas as gpd
 import os
@@ -21,9 +21,20 @@ from scipy.spatial import cKDTree
 import joblib
 import shutil
 
-##import config file 
-import DEM_CREATION_FINAL as main
-import CFG_DEM_CREATION as cfg
+
+''' 
+Script to apply pre-trained ground filtering algorithm (cfg.model_file) on parts of dataset that falls within 
+wetlands footprint shapefile (cfg.wetland_extent)
+Applies seperately on each dataset of each tile
+Applies only on dataset where "ApplyCorrection" is set to "True" in cfg.specs_file
+Applies only if cfg.apply_correction is set to "True"
+Uses Sentinel2 mosaics stored in cfg.path_img_sentinel2  
+
+Ground filtering algorithm development: Dominic Thériault (dominic.theriault@ec.gc.ca) and Antoine Maranda (antoine.maranda@ec.gc.ca)
+Integration in DEM creation workflow: Antoine Maranda (antoine.maranda@ec.gc.ca) and Dominic Thériault (dominic.theriault@ec.gc.ca)
+
+Environment and Climate Change Canada, National Hydrologic Services, Hydrodynamic and Ecohydraulic Section
+'''
 
 def merging_rasters(list_tif_file, dst, extent, crs_tile, dump_folder):
     raster_to_mosiac=[]
@@ -130,15 +141,14 @@ def merge_rasters_ndvi(list_ndvi_raster, output_mosaic, nodata_value=-9999):
         m.write(mosaic)
         
 def CD_to_IGLD85(cd_file, cd_crs, dataset, crs):   
-    ##TODO  verifier que la reprojection se fait bien peut etre melangeant et contre intuitif
+
     df_cd=pd.read_csv(cd_file, sep=';')
     x_pts=df_cd['XVAL'].to_numpy()
     y_pts=df_cd['YVAL'].to_numpy()
     conv_pts=df_cd['CD'].to_numpy()
 
     transformer = Transformer.from_crs(cd_crs, crs)
-        
-    ## it works but strange!! ##
+
     x_proj, y_proj=transformer.transform(y_pts, x_pts)
     xys=np.c_[x_proj, y_proj]
     tree=cKDTree(xys)
@@ -270,7 +280,6 @@ def interpolationIDW(source_array, dest_array, distance_upper_bound=10000, k=3):
 def change_nodata(src, dst, src_nodat, dst_nodat):  
     with rio.open(src) as src:
         nodat=src.nodata
-        print(nodat)
         out_image= src.read()
         out_image=np.where(out_image==np.min(out_image), dst_nodat, out_image)
         out_meta=src.meta
@@ -281,7 +290,6 @@ def change_nodata(src, dst, src_nodat, dst_nodat):
         )
     with rio.open(dst, "w", **out_meta) as dest:
             dest.write(out_image)
-
 
 def execute(t, cfg, res_folder):
     dump_folder = cfg.dump_corr
@@ -358,7 +366,6 @@ def execute(t, cfg, res_folder):
                                 dict_years_ndvi[year].append(gdf_extent_tile)  
                                      
                     else:
-                             
                         print('not tiled')
                         year = specs['Sentinel2_year'].values[0]
                         if year not in dict_years_ndvi:
@@ -377,8 +384,7 @@ def execute(t, cfg, res_folder):
                         else:
                             print('no wetland portion in this dataset')
                             continue
-                             
-                                                 
+
                     if len(dict_years_ndvi[year])>0:
                                              
                         list_ndvi_raster = []
@@ -398,8 +404,7 @@ def execute(t, cfg, res_folder):
                             gdf_merge=gdf_merge.dissolve()
                             gdf_merge_file=os.path.join(dump_folder, f'gdf_merge.shp')
                             gdf_merge.to_file(gdf_merge_file)
-                            crs_dataset = str(gdf_extent.crs).split(':')[1]
-                             
+
                             ndvi_raster = os.path.join(cfg.path_img_sentinel2, year, f'Tile_{t}_4326_{year}_S2_NDVI_BOA1.tif')
                             ndvi_proj=fr'{dump_folder}\Tile_{t}_4326_{year}_S2_NDVI_BOA1_proj.tif'
                             reproj_raster(ndvi_raster, crs, ndvi_proj)
@@ -496,8 +501,6 @@ if __name__ == '__main__':
     
     for tiles in lot_of_tiles:
         tiles=[tiles]
-    
-    
         res_folder=fr'F:\DEM_GLAMM\DEM_CREATION_FINAL\results\{tiles[0]}_on_demand'
         dump_folder=r'F:\DEM_GLAMM\DEM_CREATION_FINAL\dump_corr'
         final_res=1

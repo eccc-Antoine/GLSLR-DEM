@@ -5,6 +5,20 @@ import shapely
 from shapely.validation import make_valid
 import CFG_DEM_CREATION as cfg
 
+''' 
+Script to:
+    - Add metadata information in dataset extent file 
+    - Clip dataset extent based on no-data masks (maks were created with semi-automated routines, would need better attention)
+    - Computes an indicatives reliability score for each tile
+
+Coded in the GLAM Expedited review context, may need several modification if
+used for another study area 
+
+Author: Antoine Maranda (antoine.maranda@ec.gc.ca)
+Environment and Climate Change Canada, National Hydrologic Services, Hydrodynamic and Ecohydraulic Section
+'''
+
+
 def clean_gdf(gdf):
     extent=gdf.explode(ignore_index=True, index_parts=True)
     extent.reset_index(drop=True)    
@@ -153,8 +167,7 @@ def execute(tiles, cfg, version, workdir, res_folder):
             if len(de_filt)==0:
                 de.to_file(fr"{cfg.dump_folder}\datasets_extent_{t}_3.shp")
                 continue
-            
-                       
+
             de=de_filt.sort_values(by=['priority'])            
             de['all_prior']=de['priority']        
             de['t_priority']=(de.index+1).astype(int)            
@@ -243,51 +256,7 @@ def execute(tiles, cfg, version, workdir, res_folder):
                 gdf.to_file(fr"{cfg.dump_folder}\datasets_extent_{t}_4.shp")
         else:
             gdf.to_file(fr"{cfg.dump_folder}\datasets_extent_{t}_4.shp")
-    
-    #===========================================================================
-    # for t in tiles:
-    #     
-    #     no_data=fr"{res_folder}\{t}_elevetaion_data_gaps.shp"
-    #     de=fr"{workdir}\results\{t}_{version}\datasets_extent_{t}_4.shp"
-    #     
-    #     if os.path.exists(no_data):
-    #         de_gdf=gpd.read_file(de)
-    #         
-    #         de_gdf=clean_gdf(de_gdf)
-    #         
-    #         de_gdf_diss=de_gdf.dissolve()
-    #         
-    #         crs=de_gdf.crs
-    #         
-    #         no_data_gdf=gpd.read_file(no_data)
-    #         
-    #         no_data_gdf=clean_gdf(no_data_gdf)
-    #         
-    #         no_data_gdf=no_data_gdf.to_crs(crs)
-    #         
-    #         no_data_gdf=no_data_gdf.dissolve()
-    #         
-    #         print(1)
-    #         
-    #         de_gdf_diss['geometry']=de_gdf_diss['geometry'].difference(no_data_gdf['geometry'])
-    #         
-    #         print(2)
-    #         
-    #         de_gdf_diss=clean_gdf(de_gdf_diss)
-    #         
-    #         de_gdf=de_gdf.clip(de_gdf_diss)
-    #         
-    #         de_gdf=de_gdf.dissolve(by='dataset', as_index=False)
-    #         
-    #         de_gdf=clean_gdf(de_gdf)
-    #         
-    #     else:
-    #         #nodata_unavailable.append(t)
-    #         de_gdf=gpd.read_file(de)
-    #         de_gdf=clean_gdf(de_gdf)
-    #         
-    #     de_gdf.to_file(fr"{workdir}\results\{t}_{version}\datasets_extent_{t}_5.shp")
-    #===========================================================================
+
         
     for t in tiles:
         set=fr"{cfg.dump_folder}\datasets_extent_{t}_4.shp"

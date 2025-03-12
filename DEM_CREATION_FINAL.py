@@ -2,11 +2,10 @@
 '''
 Main code to create seamless topobathy DEM in LKO, USL and SLR from various topo and bathy datasources 
 Parameters are set in CFG_DEM_CREATION.py file 
-Developped form GLAM comitee expeditive review in 2023
+Developped form GLAM expedited review in 2023
 
 Author: Antoine Maranda (antoine.maranda@ec.gc.ca)
 Environment and Climate Change Canada, National Hydrologic Services, Hydrodynamic and Ecohydraulic Section
-
 '''
 
 ##PYTHON MODULES to import##
@@ -46,19 +45,16 @@ wbt.set_verbose_mode(False)
 from ast import literal_eval
 
 ##OTHER CODES TO IMPORT 
-from dataset_tiles_intersect2 import *
+from dataset_tiles_intersect import *
 import dataset_extent_modif
-import Wetland_correction_seperate_everywhere
+import Wetland_correction_seperate
 import MASK_DEM_EXEC
 import CFG_DEM_CREATION as cfg
-
-
 
 def reclass_and_polygonize(src, dst, dump_folder, gdal_scripts):
     with rasterio.open(src) as raster_file:
         raster = raster_file.read()
         raster[raster > 0] = 1
-        print(raster.shape)
         out_meta=raster_file.meta
         out_meta.update({"driver": "GTiff",
                      "height": raster.shape[1],
@@ -69,7 +65,6 @@ def reclass_and_polygonize(src, dst, dump_folder, gdal_scripts):
         dest.write(raster)
     cmd_poly=fr'{gdal_scripts}\gdal_polygonize.py {bidon} {dst}'
     os.system(cmd_poly)
-
 
 def clean_gdf(gdf):
     extent=gdf.explode(ignore_index=True, index_parts=True)
@@ -97,8 +92,7 @@ def csv_to_geotiff(outFileName, Xfield, Yfield, field, dst_tif, resolution, fina
     lyr_name =  outFileName.replace('.csv', '')
     lyr_name = os.path.basename(lyr_name)
     dst_tif =  dst_tif   
-    df = pd.read_csv(outFileName, sep=';')    
-    ## enligne parfaitement le tif pour que un point soit un centre de un pixel 
+    df = pd.read_csv(outFileName, sep=';')
     xmax = (df[xval].max() + (resolution / 2))
     xmin = (df[xval].min() - (resolution / 2))
     ymax = (df[yval].max() + (resolution / 2))
@@ -123,7 +117,6 @@ def hillshadeoverview(dtm, nodat):
         elevation=image
         elevation[elevation == nodat] = np.nan
         elevation=elevation*10
-
     fig, ax = plt.subplots(figsize=(15, 9))
     hillshade= es.hillshade(elevation)
     ax.imshow(hillshade*-1, cmap="Greys")
@@ -304,15 +297,14 @@ def raster_to_XYZ_numpy(raster):
     return export_fct
 
 def CD_to_IGLD85(cd_file, cd_crs, dataset):   
-    ##TODO  verifier que la reprojection se fait bien peut etre melangeant et contre intuitif
+
     df_cd=pd.read_csv(cd_file, sep=';')
     x_pts=df_cd['XVAL'].to_numpy()
     y_pts=df_cd['YVAL'].to_numpy()
     conv_pts=df_cd['CD'].to_numpy()
 
     transformer = Transformer.from_crs(cd_crs, crs)
-        
-    ## it works but strange!! ##  ## retested in 2023-08-16 inn still seems to be what is working... 
+
     x_proj, y_proj=transformer.transform(y_pts, x_pts)
     
     xys=np.c_[x_proj, y_proj]
@@ -525,7 +517,7 @@ if __name__ == '__main__':
             logger.info(f'**********PROCESS Started at : {datetime.datetime.now()}***************\n')
             start=datetime.datetime.now()
      
-            ## determine tile native CRS which will be used throuout the process
+            ## determine tile native CRS which will be used throughout the process
             dct_crs={17:'epsg:32617', 18:'espg:32618', 19:'epsg:32619'}
             zone=df_grid['UTM'].loc[df_grid['TILE']==t].values[0]
             crs_long=dct_crs[zone]
@@ -681,8 +673,7 @@ if __name__ == '__main__':
                          
                     if count == len(datasets_sorted):
                         buff=0
-     
-                         
+
                     logger.info(f'buffer size used to create overlap with adjacent dataset: {buff}')
                          
                     if 'NONNA' not in name:
@@ -728,8 +719,7 @@ if __name__ == '__main__':
                             logger.info('\n********************************************************\n')
                             print('nothing left of this dataset... skipping')
                             continue
-     
-                    ## buffering with ogr, seems faster than shapely
+
                     extent_buff['geometry']=extent_buff['geometry'].simplify(1)
                     extent_base=extent_buff
                     extent_base=extent_base.explode()
@@ -898,8 +888,7 @@ if __name__ == '__main__':
                 # remove outliers
                 arr=np.where(arr>1000, 0, arr)
                 arr=np.where(arr<-1000, 0, arr)
-                 
-                 
+
                 if len(np.unique(arr))==1 and np.unique(arr)[0]==0:
                     print('nothing left, skipping..')
                     continue
@@ -929,8 +918,7 @@ if __name__ == '__main__':
                     csv=fr'{dump_folder}\nonna.csv'
                     df_nonna.to_csv(csv, sep=';', index=None)
                     dst_tif=csv.replace('.csv', '.tif')
-                    
-                    
+
                     csv_to_geotiff(csv, 'XVAL', 'YVAL', 'ZVAL', dst_tif, 10, 10, crs)
                     nonna_ext_poly=os.path.join(dump_folder, f'nonna_ext_poly.shp')                       
                     reclass_and_polygonize(dst_tif, nonna_ext_poly, dump_folder, cfg.gdal_scripts)
@@ -1065,9 +1053,7 @@ if __name__ == '__main__':
                     specs_previous=df_specs.loc[df_specs['DATASET']==datasets_sorted[count-2]]
                     previous_data_type = specs_previous['type'].values[0]
                     print(f'PREVIOUS DAT TYPE IS : {previous_data_type}')
-                     
-                     
-                              
+
                 ## final_resoltuion is generally [1]:
                 resolution=final_resolutions[0]
                 ## resampling tif to same resolution before merging
@@ -1144,14 +1130,7 @@ if __name__ == '__main__':
                             new_bathy['geometry']=new_bathy['geometry'].difference(extent_topo['geometry'])
                         else:
                             new_bathy=new_bathy
-                             
-                        #=======================================================
-                        # if str(extent_topo.geometry.iloc[0]).split(' ')[0]!='POLYGON' and str(extent.geometry.iloc[0]).split(' ')[0]!='MULTIPOLYGON':
-                        #     new_bathy=new_bathy
-                        # else:
-                        #     new_bathy['geometry']=new_bathy['geometry'].difference(extent_topo['geometry'])  
-                        #=======================================================
-                             
+
                         new_bathy=clean_gdf(new_bathy)
                         new_bathy.to_file(fr'{dump_folder}\new_bathy_test.shp')
                         new_extent.append(new_bathy)
@@ -1313,7 +1292,7 @@ if __name__ == '__main__':
             if cfg.apply_correction:
                 if t in cfg.tiles_w_corr:
                     print('################################ APPLYING WETLAND CORRECTION ALGORITHM #########################################')
-                    datasets_corrected=Wetland_correction_seperate_everywhere.execute(t, cfg, res_folder)
+                    datasets_corrected=Wetland_correction_seperate.execute(t, cfg, res_folder)
                     logger.info(fr'WETLAND CORRECTION MODEL SUCCESFULLY APPLIED TO {datasets_corrected}')
 
             print('################################ modify dataset extent #########################################')
@@ -1333,10 +1312,9 @@ if __name__ == '__main__':
             MASK_DEM_EXEC.execute(liste, cfg, res_folder, dump_folder, cfg.final_resolutions[0])
             logger.info(fr'DEM masked based on nodata file')
             print('################################ DEM masked with no_data mask #########################################') 
-            #logger.info(f'\n\n**********DEM PROCESS COMPLETED at : {datetime.datetime.now()} in {datetime.datetime.now()-start} ************************')
+
             print('################################COMPLETED WITHOUT ERROR #########################################')
-            #file_handler.close()
-            #logger.handlers.pop()
+
             list_worked.append(t)
             ## compile sucessfully processed tiles in a .csv
             df_worked=pd.DataFrame(list_worked, columns=['tiles'])
