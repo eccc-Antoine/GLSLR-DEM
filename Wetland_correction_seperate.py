@@ -497,12 +497,12 @@ def execute(t, cfg, res_folder):
 
 if __name__ == '__main__':
     
-    lot_of_tiles=[486]
+    lot_of_tiles=[436]
     
     for tiles in lot_of_tiles:
         tiles=[tiles]
-        res_folder=fr'F:\DEM_GLAMM\DEM_CREATION_FINAL\results\{tiles[0]}_on_demand'
-        dump_folder=r'F:\DEM_GLAMM\DEM_CREATION_FINAL\dump_corr'
+        res_folder=fr'F:\DEM_GLAMM\Git_DEM_GLAM\results\{tiles[0]}_V4_4'
+        dump_folder=r'F:\DEM_GLAMM\Git_DEM_GLAM\dump_corr'
         final_res=1
         import CFG_DEM_CREATION as cfg
         execute(tiles[0], cfg, res_folder)

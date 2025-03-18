@@ -43,6 +43,8 @@ from WBT.whitebox_tools import WhiteboxTools
 wbt = WhiteboxTools()
 wbt.set_verbose_mode(False)
 from ast import literal_eval
+from rasterio.features import shapes
+from shapely.geometry import shape
 
 ##OTHER CODES TO IMPORT 
 from dataset_tiles_intersect import *
@@ -51,20 +53,30 @@ import Wetland_correction_seperate
 import MASK_DEM_EXEC
 import CFG_DEM_CREATION as cfg
 
-def reclass_and_polygonize(src, dst, dump_folder, gdal_scripts):
+def reclass_and_polygonize(src, dst):
     with rasterio.open(src) as raster_file:
         raster = raster_file.read()
-        raster[raster > 0] = 1
-        out_meta=raster_file.meta
+        raster[raster == 0] = -32768
+        out_meta = raster_file.meta
         out_meta.update({"driver": "GTiff",
-                     "height": raster.shape[1],
-                     "width": raster.shape[2]})
-    bidon=os.path.join(dump_folder, f'bidon.tif')
-    
-    with rasterio.open(bidon, "w", **out_meta) as dest:
-        dest.write(raster)
-    cmd_poly=fr'{gdal_scripts}\gdal_polygonize.py {bidon} {dst}'
-    os.system(cmd_poly)
+                         "nodata": -32768,
+                         "height": raster.shape[1],
+                         "width": raster.shape[2],
+                         "dtype": 'float32'})
+        raster[raster > -999] = 1
+        mask = raster != -32768
+        raster=raster.astype(np.float32)
+        shapes_generator = shapes(raster, mask=mask, transform=raster_file.transform)
+        polygons = []
+        values = []
+
+        for geom, value in shapes_generator:
+            polygons.append(shape(geom))
+            values.append(value)
+
+        gdf = gpd.GeoDataFrame({'geometry': polygons, 'value': values}, crs=raster_file.crs)
+    gdf.to_file(dst)
+
 
 def clean_gdf(gdf):
     extent=gdf.explode(ignore_index=True, index_parts=True)
@@ -443,7 +455,7 @@ def dem_no_data_and_clip(crs, src, dst, dump_folder, res_folder, final_res, gdal
     cmd_final=fr'{gdal_path}\gdalwarp.exe -s_srs EPSG:{crs} -t_srs EPSG:{crs} -ot Float32 -srcnodata -32768 -dstnodata -32768 -overwrite {src} {final}'
     os.system(cmd_final)
     final_baton=f'{dump_folder}\{t}_{final_res}m_DEM_idw_filtered2.tif'
-    cmd_fill=fr'{gdal_scripts}\gdal_fillnodata.py -md 1000 {final} {final_baton}'
+    cmd_fill=fr'python {gdal_scripts}\gdal_fillnodata.py -md 1000 {final} {final_baton}'
     os.system(cmd_fill)
     final_baton_clipped=f'{dump_folder}\{t}_{final_res}m_DEM_idw_filtered_clipped.tif'
     clipping_raster(tile_xtent, final_baton, final_baton_clipped)
@@ -506,6 +518,10 @@ if __name__ == '__main__':
             log_file = os.path.join(res_folder, f'{t}_log.log')
             if os.path.exists(log_file):
                 os.remove(log_file)
+
+            for handler in logger.handlers[:]:
+                logger.removeHandler(handler)
+
             file_handler = logging.FileHandler(log_file)
             file_handler.setFormatter(formatter)
             logger.addHandler(file_handler)
@@ -921,7 +937,7 @@ if __name__ == '__main__':
 
                     csv_to_geotiff(csv, 'XVAL', 'YVAL', 'ZVAL', dst_tif, 10, 10, crs)
                     nonna_ext_poly=os.path.join(dump_folder, f'nonna_ext_poly.shp')                       
-                    reclass_and_polygonize(dst_tif, nonna_ext_poly, dump_folder, cfg.gdal_scripts)
+                    reclass_and_polygonize(dst_tif, nonna_ext_poly)
                     nonna_ext_gdf=gpd.read_file(nonna_ext_poly) 
                     
                     gdf_extent=gpd.read_file(extent_file)
@@ -1215,7 +1231,7 @@ if __name__ == '__main__':
                         method="cc", 
                         weight=1.0)
                 else:
-                    cmd_final_merge=f'{gdal_scripts}\gdal_merge.py -o {merged_DEM} {bathy_tif_clipped} {topo_tif_clipped}'  
+                    cmd_final_merge=f'python {gdal_scripts}\gdal_merge.py -o {merged_DEM} {bathy_tif_clipped} {topo_tif_clipped}'
                     os.system(cmd_final_merge)
      
             elif os.path.exists(topo_tif_clipped):
@@ -1229,7 +1245,7 @@ if __name__ == '__main__':
             merged_dem_nodat=fr'{dump_folder}\{t}_{final_res}m_DEM_idw_both_types_nodat.tif'
             merged_DEM_filled=fr'{dump_folder}\{t}_{final_res}m_DEM_idw_both_types_filled.tif'
             cmd_nodat=fr'{gdal_path}\gdalwarp.exe -t_srs EPSG:{crs} -ot Float32 -dstnodata -32768 {merged_DEM} {merged_dem_nodat}'
-            cmd_fill=fr'{gdal_scripts}\gdal_fillnodata.py -md 1000 {merged_dem_nodat} {merged_DEM_filled}'
+            cmd_fill=fr'python {gdal_scripts}\gdal_fillnodata.py -md 1000 {merged_dem_nodat} {merged_DEM_filled}'
             os.system(cmd_nodat)
             os.system(cmd_fill)
 

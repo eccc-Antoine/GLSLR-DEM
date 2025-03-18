@@ -1,13 +1,14 @@
 import os
 
 # main directory
-workdir=fr'F:\DEM_GLAMM\DEM_CREATION_FINAL'
+workdir=fr'F:\DEM_GLAMM\Git_DEM_GLAM'
 
 # Version of DEM to be created
 res_folder_name='V4_4'
 
 # DEM tiles to compute
-tiles=list(range(78, 492))
+#tiles=list(range(78, 492))
+tiles=[217]
 tiles_to_remove=[160, 161, 138, 125, 85, 79, 80, 81, 333]
 tiles=[x for x in tiles if x not in tiles_to_remove]
 
@@ -24,11 +25,12 @@ dataset_dir = fr'{workdir}\DATA'
 
 # Datasets specification and priority
 specs_file = os.path.join(workdir, f'list_main_datasets.csv')
+specs_file_details = os.path.join(workdir, f'list_main_datasets_details.csv')
 
 # Overlapping analysis between tile and datasets location
 tile_overlap_dir= os.path.join(workdir, "dataset_tile_overlap")
 # Results of previous tile and datasets analysis (to avoid unnecessary computation)
-previous_version = os.path.join(workdir, f"tiles_dataset.csv")
+previous_version = os.path.join(workdir, "tiles_dataset.csv")
 
 # ISEE tile files
 tiles_file_overview=fr"{workdir}\GLAM_ISEE_Tiles\Tuile_final_w_conversions.shp"
@@ -39,7 +41,8 @@ nodata_folder=fr"{workdir}\data_gaps"
 
 # Dump for intermediate products (needs a few Gb of storage space)
 dump_folder = os.path.join(workdir, 'dump')
-clean_dump=True
+# Useful to set to "False" when debugging
+clean_dump=False
 
 # Area of Interest shapefile
 AOI= os.path.join(workdir, 'AOI',  r"AOI_distance_5km_LKO_USL_SLR.shp")
