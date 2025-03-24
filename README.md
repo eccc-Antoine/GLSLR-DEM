@@ -13,8 +13,10 @@ The following data are not provided within this repo:
 	- Bathymetric dataset extent shapefiles	(/topo)
 	- The extent shapefiles of source datasets used to create topobathy DEM in the United States portion of the AOI. (/USACE_metadata)
 	- Areas where elevation data are missing or are of unsuficient quality to be integreatd in the final DEM (/data_gaps)
+	
+Hyperlink towards publicaly availbale source data can be found in list_main_datasets_details.csv 
 
-To request access to those file please contact National Hydrological Services - Hydrodynamic Ecohydraulic Section:
+To request access to any other files, please contact National Hydrological Services - Hydrodynamic Ecohydraulic Section:
 
 Antoine Maranda (antoine.maranda@ec.gc.ca); 
 Dominic Theriault (dominic.theriault@ec.gc.ca);
