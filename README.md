@@ -1,7 +1,7 @@
 # GLSLR-DEM
 
 This repository contains all the scripts and most of configuration files needed to create 1m resolution topo-bathymetric DEM in
-Lake Ontario and the fluvial strecth of St. Lawrence River floodplain.
+Lake Ontario and the fluvial stretch of St. Lawrence River floodplain.
 
 It was created from 2022 to 2025, for the GLAM expedited review of Plan 2014.
 
@@ -16,8 +16,10 @@ The following data are not provided within this repo:
 
 To request access to those file please contact National Hydrological Services - Hydrodynamic Ecohydraulic Section:
 
-Antoine Maranda (antoine.maranda@ec.gc.ca)
-Marianne Bachand(Marianne.bachand.ec.gc.ca)
+Antoine Maranda (antoine.maranda@ec.gc.ca); 
+Dominic Theriault (dominic.theriault@ec.gc.ca);
+Patrice Fortin (patrice.fortin@ec.gc.ca);
+Marianne Bachand(Marianne.bachand.ec.gc.ca);
 
 Conda environment with all necessary dependencies, can be created with GLSLR_DEM.yml file.
 Note that the following softwares need to be downloaded and installed locally:
@@ -26,3 +28,4 @@ Note that the following softwares need to be downloaded and installed locally:
 
 ![Preview](https://raw.githubusercontent.com/eccc-Antoine/GLSLR-DEM/main/docs/assets/images/GLSLR_DEM_Workflow.png)
 
+Author: Antoine Maranda (ECCC, NHS-HES)
