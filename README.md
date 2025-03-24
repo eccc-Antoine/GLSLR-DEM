@@ -14,4 +14,15 @@ The following data are not provided within this repo:
 	- The extent shapefiles of source datasets used to create topobathy DEM in the United States portion of the AOI. (/USACE_metadata)
 	- Areas where elevation data are missing or are of unsuficient quality to be integreatd in the final DEM (/data_gaps)
 
-![Preview](https://raw.githubusercontent.com/eccc-Antoine/GLSLR-DEM/main/docs/assets/images/GLSR_DEM_Workflow.png)
+To request access to those file please contact National Hydrological Services - Hydrodynamic Ecohydraulic Section:
+
+Antoine Maranda (antoine.maranda@ec.gc.ca)
+Marianne Bachand(Marianne.bachand.ec.gc.ca)
+
+Conda environment with all necessary dependencies, can be created with GLSLR_DEM.yml file.
+Note that the following softwares need to be downloaded and installed locally:
+- WhiteboxTools Open Core from Whotebox geospatial, has to be downloaded and installed locally. (https://www.whiteboxgeo.com/download-whiteboxtools/)
+- GDAL (https://gdal.org/en/stable/download.html)
+
+![Preview](https://raw.githubusercontent.com/eccc-Antoine/GLSLR-DEM/main/docs/assets/images/GLSLR_DEM_Workflow.png)
+
