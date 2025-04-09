@@ -14,14 +14,14 @@ The following data are not provided within this repo:
 	- The extent shapefiles of source datasets used to create topobathy DEM in the United States portion of the AOI. (/USACE_metadata)
 	- Areas where elevation data are missing or are of unsuficient quality to be integreatd in the final DEM (/data_gaps)
 	
-Hyperlink towards publicaly availbale source data can be found in list_main_datasets_details.csv 
+Hyperlink towards publicly available source data can be found in list_main_datasets_details.csv 
 
 To request access to any other files, please contact National Hydrological Services - Hydrodynamic Ecohydraulic Section:
 
 Antoine Maranda (antoine.maranda@ec.gc.ca); 
 Dominic Theriault (dominic.theriault@ec.gc.ca);
 Patrice Fortin (patrice.fortin@ec.gc.ca);
-Marianne Bachand(Marianne.bachand.ec.gc.ca);
+Marianne Bachand (Marianne.bachand.ec.gc.ca);
 
 Conda environment with all necessary dependencies, can be created with GLSLR_DEM.yml file.
 Note that the following softwares need to be downloaded and installed locally:
