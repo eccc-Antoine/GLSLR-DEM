@@ -10,7 +10,7 @@ The following data are not provided within this repo:
 	- Bathymetric and topographic elevation source data (/DATA)
 	- NDVI mosaic from Sentinel 2 images (/correction_model/NDVI)
 	- Bathymetric dataset extent shapefiles	(/bathy)
-	- Bathymetric dataset extent shapefiles	(/topo)
+	- Topographic dataset extent shapefiles	(/topo)
 	- The extent shapefiles of source datasets used to create topobathy DEM in the United States portion of the AOI. (/USACE_metadata)
 	- Areas where elevation data are missing or are of unsuficient quality to be integreatd in the final DEM (/data_gaps)
 	
